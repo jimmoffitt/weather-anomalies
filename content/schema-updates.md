@@ -1,8 +1,12 @@
+The anomaly detection algorithms are based on this schema: 
+
 ```sql
 SELECT id, 
        timestamp, 
        value
 ```
+
+The weather monitoring project uses the following schema. Actually, there are a total of seven different weather measurements. In addition to temperature, the data includes wind speed and direction, humidity, cloud cover, precipitation, and barometric pressure. Here the focus is on temperature, and these algorithms will be used to detect temperature anomalies. If you wanted to detect anomalies in other weather parameters, you could replace `temp_f` with another type.  
 
 ```sql
 SELECT site_name, 
