@@ -14,6 +14,11 @@ SELECT site_name,
        temp_f
 ```
 
+One key difference is that the anomaly examples use a numeric sensor id, whereas the weather data schema uses a string (a city name). 
+
+Overall, the SQL updates are straightforward. Next, here are some examples of updating a anomaly detection query to match the weather schema. 
+
+
 ### IQR examples
 
 ```sql
