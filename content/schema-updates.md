@@ -14,83 +14,20 @@ SELECT site_name,
        temp_f
 ```
 
-One key difference is that the anomaly examples use a numeric sensor id, whereas the weather data schema uses a string (a city name). 
+To update the example algorithms, you can just replace `id` with `site_name`, and `value` with `temp_f`. 
 
-Overall, the SQL updates are straightforward. Next, here are some examples of updating a anomaly detection query to match the weather schema. 
-
-
-### IQR examples
+One key difference is that the example schema uses a numeric sensor id, whereas the weather data schema uses a string (a city name). When setting these up as query parameters, the data type the parameter is cast to needs to be updated from `Int32` to `String`:
 
 ```sql
-SELECT id,
-       quantileExact(0.25) (value) AS lower_quartile,
-       quantileExact(0.75) (value) AS upper_quartile
-
+{% if defined(sensor) %}               
+    AND id = {{ Int32(sensor, description="Used to select a single sensor of interest. Optional.")}}       
+{% end %}  
 ```
 
 ```sql
-SELECT site_name,
-       quantileExact(0.25) (temp_f) AS lower_quartile,
-       quantileExact(0.75) (temp_f) AS upper_quartile
-```
-
-```sql
-SELECT DISTINCT timestamp, 
-       id, 
-       value
-```
-
-```sql
-SELECT DISTINCT timestamp, 
-       site_name, 
-       temp_f
-```
-
-### Rate-of-change example
-
-```sql
-lagInFrame(timestamp, 1) OVER 
-        (PARTITION BY id ORDER BY timestamp ASC ROWS BETWEEN 1 PRECEDING AND 1 PRECEDING) AS previous_timestamp, 
-lagInFrame(temp_f, 1) OVER
-        (PARTITION BY id ORDER BY timestamp ASC ROWS BETWEEN 1 PRECEDING AND 1 PRECEDING) AS previous_value
-```
-
-```sql
-lagInFrame(timestamp, 1) OVER 
-        (PARTITION BY site_name ORDER BY timestamp ASC ROWS BETWEEN 1 PRECEDING AND 1 PRECEDING) AS previous_timestamp, 
-lagInFrame(temp_f, 1) OVER
-        (PARTITION BY site_name ORDER BY timestamp ASC ROWS BETWEEN 1 PRECEDING AND 1 PRECEDING) AS previous_value
-```
-
-### Z-score example
-
-```sql
- WITH stats AS (
-      SELECT id,
-             avg(value) AS average,
-             stddevPop(value) AS stddev
-        FROM incoming_data
-        WHERE timestamp BETWEEN (NOW() - INTERVAL stats_window_minutes MINUTE) AND NOW()
-           {% if defined(sensor) %}               
-              AND id = {{ String(sensor, description="Used to select a single sensor of interest. Optional.")}}       
-           {% end %}  
-        GROUP BY id  
-    )
-
-```
-
-```sql
- WITH stats AS (
-      SELECT site_name,
-             avg(temp_f) AS average,
-             stddevPop(temp_f) AS stddev
-        FROM weather_data.weather_data
-        WHERE timestamp BETWEEN (NOW() - INTERVAL stats_window_minutes MINUTE) AND NOW()
-           {% if defined(city) %}               
-              AND site_name = {{ String(city, description="Used to select a single city of interest. Optional.")}}       
-           {% end %}  
-        GROUP BY site_name  
-    )
+{% if defined(city) %}               
+   AND site_name = {{ String(city, description="Used to select a single city of interest. Optional.")}}       
+{% end %}  
 ```
 
 
